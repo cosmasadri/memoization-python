@@ -113,8 +113,7 @@ def test_remove_memoized_result_after_timeout():
     assert memoized(test_arg) == 5
     assert mock_test_function.call_count == 1
 
-    # it will fail if set to sleep time lower than 1.02
-    time.sleep(1.02)
+    time.sleep(1)
     assert memoized(test_arg) == 5
     assert mock_test_function.call_count == 2
 

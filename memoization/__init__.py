@@ -1,8 +1,4 @@
-from threading import Timer
-
-
-def remove_key(key, cache_dict):
-    del cache_dict[key]
+import datetime
 
 
 def memoize(func, timeout, resolver=None):
@@ -34,13 +30,14 @@ def memoize(func, timeout, resolver=None):
         as the original function, the resolver function should provide the memoization key.
         resolver (function, optional): timeout for cached values in milliseconds. Defaults to None.
     """
+
     cache = dict()
 
     if type(timeout) != int and type(timeout) != float:
         raise TypeError("timeout must be integer or float")
     else:
         # converting from milliseconds into seconds
-        timeout = timeout / 1000
+        timeout = datetime.timedelta(milliseconds=timeout)
 
     if not callable(func):
         raise TypeError("func must be a function")
@@ -50,14 +47,14 @@ def memoize(func, timeout, resolver=None):
 
     def memoized_func(*args):
         cache_key = str(args) if resolver is None else resolver(*args)
+        now = datetime.datetime.now()
 
-        if cache_key in cache:
-            return cache[cache_key]
+        if cache_key in cache and now - cache[cache_key][0] <= timeout:
+            return cache[cache_key][1]
 
         result = func(*args)
-        cache[cache_key] = result
+        cache[cache_key] = (now, result)
 
-        Timer(timeout, remove_key, (cache_key, cache)).start()
         return result
 
     return memoized_func
